@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int        @id @default(autoincrement())
+  email        String     @unique
+  password     String
+  firstName    String
+  lastName     String
+  role         Role       @default(USER)
+  imageProfile String?
+  order        order[]
+  cartItem     cartItem[]
+  wishItem     wishItem[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Products {
+  id               Int             @id @default(autoincrement())
+  name             String
+  description      String
+  price            Int
+  brand            String
+  productVariantId Int
+  productvariant   ProductVariants @relation(fields: [productVariantId], references: [id])
+  orderItem        orderItem[]
+  cartItem         cartItem[]
+  wishItem         wishItem[]
+}
+
+model ProductVariants {
+  id             Int           @id @default(autoincrement())
+  amount         Int
+  colorId        Int
+  color          Color         @relation(fields: [colorId], references: [id])
+  imageProductId Int
+  imageProduct   imageProducts @relation(fields: [imageProductId], references: [id])
+  Products       Products[]
+  orderItem      orderItem[]
+  cartItem       cartItem[]
+}
+
+model Color {
+  id              Int               @id @default(autoincrement())
+  codeName        String
+  ProductVariants ProductVariants[]
+}
+
+model imageProducts {
+  id              Int               @id @default(autoincrement())
+  imageUrl        String
+  ProductVariants ProductVariants[]
+}
+
+model order {
+  id        Int         @id @default(autoincrement())
+  createAt  DateTime    @default(now())
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id])
+  orderItem orderItem[]
+}
+
+model orderItem {
+  id               Int             @id @default(autoincrement())
+  amount           Int
+  productId        Int
+  product          Products        @relation(fields: [productId], references: [id])
+  productVariantId Int
+  productVariant   ProductVariants @relation(fields: [productVariantId], references: [id])
+  oderId           Int
+  order            order           @relation(fields: [oderId], references: [id])
+}
+
+model cartItem {
+  id               Int             @id @default(autoincrement())
+  amount           Int
+  productId        Int
+  product          Products        @relation(fields: [productId], references: [id])
+  productVariantId Int
+  productVariant   ProductVariants @relation(fields: [productVariantId], references: [id])
+  userId           Int
+  user             User            @relation(fields: [userId], references: [id])
+}
+
+model wishItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  productId Int
+  product   Products @relation(fields: [productId], references: [id])
+}
